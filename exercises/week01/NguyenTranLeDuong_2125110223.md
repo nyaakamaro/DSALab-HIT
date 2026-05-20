@@ -1,6 +1,6 @@
-/*
+/* 
  * DU AN 5: HE THONG RAP CHIEU PHIM
- * Cau truc: BST + Queue + Stack + 2D Array
+ * Cau truc: BST + Queue + Stack + 2D Array 
  * File: DuAn5_RapChieuPhim.cpp
  */
 
