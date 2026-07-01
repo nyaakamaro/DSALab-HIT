@@ -1,190 +1,114 @@
-# 🧠 DSALab — Cấu Trúc Dữ Liệu & Giải Thuật (C++)
+# Hệ thống Quản lý Thư viện (kèm Thư viện số)
 
-<div align="center">
+Ứng dụng console C++ quản lý thư viện: quản lý sách, độc giả, mượn/trả sách, lịch sử thao tác có Undo, thống kê, lưu/đọc file — và mở rộng thêm tính năng **thư viện số**: xem tóm tắt sách, đọc nội dung online, viết/xem bình luận và đánh giá sao.
 
-![C++](https://img.shields.io/badge/C++-17-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-Active-brightgreen?style=for-the-badge)
-![Chapters](https://img.shields.io/badge/Chapters-6-blueviolet?style=for-the-badge)
+## Cấu trúc file
 
-**Dự án học liệu C++ toàn diện về Cấu trúc Dữ liệu và Giải thuật**  
+| File | Nội dung |
+|---|---|
+| `library.h` | Khai báo các struct/class: `WaitQueue`, `CommentList`, `Book`, `Reader`, `HistoryStack`, `Library` |
+| `library.cpp` | Cài đặt toàn bộ logic nghiệp vụ |
+| `main.cpp` | Menu console, nhập liệu, và bộ test case tự động (demo nhanh) |
 
-[📖 Lý thuyết](#-nội-dung-từng-chương) · [💻 Cài đặt](#️-cài-đặt--chạy) · [🗂 Cấu trúc](#-cấu-trúc-dự-án) · [🤝 Đóng góp](#-đóng-góp)
+## Cấu trúc dữ liệu sử dụng
 
-</div>
+| Cấu trúc | Dùng cho | Vì sao |
+|---|---|---|
+| **Cây nhị phân tìm kiếm (BST)** | Lưu trữ sách (`Book`), khóa = mã sách | Tìm kiếm/thêm/xóa theo mã sách nhanh, duyệt inorder cho ra danh sách đã sắp xếp |
+| **Danh sách liên kết đơn** | Danh sách độc giả (`Reader`) | Số lượng độc giả không cố định, chèn đầu O(1) |
+| **Hàng đợi (Queue)** | Hàng chờ mượn sách (`WaitQueue`), **1 hàng đợi riêng cho mỗi cuốn sách** | Đảm bảo công bằng FIFO — ai đăng ký chờ trước được ưu tiên nhận sách trước khi có người trả |
+| **Ngăn xếp (Stack)** | Lịch sử thao tác (`HistoryStack`) | Undo thao tác gần nhất trước — đúng bản chất LIFO |
+| **Danh sách liên kết đơn** | Bình luận/đánh giá (`CommentList`), **1 danh sách riêng cho mỗi cuốn sách** | Số bình luận không giới hạn, thêm mới vào cuối để giữ đúng thứ tự thời gian |
 
----
+## Các chức năng chính
 
-## 📌 Giới Thiệu
+### Quản lý sách & độc giả
+1. Thêm / Xóa / Sửa sách
+2. Tìm kiếm sách theo mã hoặc theo tên (không phân biệt hoa/thường)
+3. Thêm độc giả, xem danh sách độc giả
 
-**DSALab** là kho học liệu mã nguồn mở về **Cấu trúc Dữ liệu và Giải thuật (DSA)** viết bằng C++17, gồm:
+### Mượn / Trả sách
+4. Mượn sách — còn bản thì cho mượn ngay, hết bản thì tự động xếp vào hàng chờ riêng của cuốn sách đó
+5. Trả sách — nếu có người đang chờ, sách được tự động giao ngay cho người đầu hàng đợi (FIFO)
 
-- ✅ **6 chương** với lý thuyết chi tiết + code mẫu đầy đủ comment
-- ✅ **Bài tập có lời giải** từ cơ bản đến nâng cao
-- ✅ **5 ứng dụng thực tế** minh họa cách dùng DSA
-- ✅ Chuẩn GitHub: cấu trúc rõ ràng, Makefile, README đầy đủ
+### Lịch sử & Undo
+6. Xem lịch sử thao tác (mới nhất trước)
+7. Undo thao tác gần nhất — hoàn tác đúng loại thao tác (thêm/xóa/sửa sách, mượn/trả sách)
 
----
+### Thống kê
+8. Sách được mượn nhiều nhất
+9. Độc giả tích cực nhất (tổng lượt mượn)
 
-## 🗂 Cấu Trúc Dự Án
+### Lưu / đọc file
+10. Lưu toàn bộ dữ liệu (sách, độc giả, bình luận) ra file `.txt`
+11. Đọc lại dữ liệu từ file — tương thích ngược với file cũ (không có tóm tắt/bình luận vẫn đọc được)
+
+### 📚 Thư viện số (tính năng mới)
+12. **Xem tóm tắt sách** — mỗi sách có thể có phần tóm tắt nội dung
+13. **Đọc nội dung online** — mỗi sách có trường `noi_dung_online`:
+    - Nếu bắt đầu bằng `http://` hoặc `https://` → được coi là **link đọc online**, chương trình in ra link (và có thể tự mở bằng trình duyệt mặc định nếu chạy trên máy có giao diện đồ họa)
+    - Nếu là văn bản thường → được coi là **nội dung đầy đủ**, in trực tiếp ra màn hình
+14. **Cập nhật tóm tắt / link đọc online** cho sách đã tồn tại
+15. **Viết bình luận + đánh giá sao (1-5)** cho từng sách
+16. **Xem toàn bộ bình luận** của một cuốn sách kèm **điểm đánh giá trung bình**
+17. **Xem chi tiết sách** — màn hình tổng hợp: thông tin cơ bản + tóm tắt + link online + điểm đánh giá
+
+## Định dạng file lưu trữ
+
+File lưu theo 3 khối, phân tách bằng dấu `|` (sách/độc giả) hoặc `~` (bình luận, để tránh nhầm với `|` có thể xuất hiện trong nội dung):
 
 ```
-DSALab/
-│
-├── 📁 src/
-│   ├── Utils/                         # Hàm tiện ích dùng chung
-│   ├── Chapter1_Overview/             # Tổng quan CTDL & GT
-│   ├── Chapter2_SearchSort/           # Tìm kiếm & Sắp xếp
-│   ├── Chapter3_LinkedList/           # Danh sách liên kết, Stack, Queue
-│   ├── Chapter4_Tree/                 # Cây nhị phân, BST
-│   ├── Chapter5_Graph/                # Đồ thị (BFS, DFS, Dijkstra, ...)
-│   └── Chapter6_DynamicProgramming/   # Quy hoạch động
-│
-├── 📁 docs/                           # Tài liệu lý thuyết Markdown
-│   ├── Chapter1_Theory.md
-│   ├── Chapter2_Theory.md
-│   ├── Chapter3_Theory.md
-│   ├── Chapter4_Theory.md
-│   ├── Chapter5_Theory.md
-│   └── Chapter6_Theory.md
-│
-├── 📁 tests/                          # Test cases
-├── 📁 assets/                         # Hình ảnh, diagram
-├── Makefile
-└── README.md
+#SACH
+ma_sach|ten_sach|tac_gia|the_loai|so_luong|so_luong_con|luot_muon|tom_tat|noi_dung_online
+
+#DOCGIA
+ma_doc_gia|ho_ten|sdt|so_sach_dang_muon|tong_luot_muon
+
+#BINHLUAN
+ma_sach~ma_doc_gia~ho_ten~so_sao~thoi_gian~noi_dung
 ```
 
----
+## Menu chương trình
 
-## 📖 Nội Dung Từng Chương
-
-| # | Chương | Nội Dung Chính | Độ Phức Tạp |
-|---|--------|----------------|-------------|
-| 1 | [Tổng Quan](docs/Chapter1_Theory.md) | Kiểu dữ liệu, CTDL, BigO | O(1) → O(2ᴺ) |
-| 2 | [Tìm Kiếm & Sắp Xếp](docs/Chapter2_Theory.md) | Linear/Binary Search, 5 Sort | O(N) → O(N log N) |
-| 3 | [Danh Sách Liên Kết](docs/Chapter3_Theory.md) | DSLK đơn, Stack, Queue | O(1) → O(N) |
-| 4 | [Cấu Trúc Cây](docs/Chapter4_Theory.md) | Binary Tree, BST, Traversal | O(log N) → O(N) |
-| 5 | [Đồ Thị](docs/Chapter5_Theory.md) | BFS, DFS, Dijkstra, MST | O(V+E) → O(V²) |
-| 6 | [Quy Hoạch Động](docs/Chapter6_Theory.md) | Memoization, Tabulation | O(N) → O(N²) |
-
----
-
-## ⚙️ Cài Đặt & Chạy
-
-### Yêu cầu
-- **Compiler:** g++ 9+ (C++17) hoặc MSVC / Clang
-- **OS:** Linux, macOS, Windows (MinGW/WSL)
-- **IDE gợi ý:** VS Code, CLion, Dev-C++, Code::Blocks
-
-### Clone dự án
-```bash
-git clone https://github.com/CocAgent/DSALab.git
-cd DSALab
+```
+ 1. Them sach                              12. Thong ke doc gia tich cuc nhat
+ 2. Xoa sach                                13. In toan bo danh sach sach
+ 3. Sua thong tin sach                      14. Luu du lieu ra file
+ 4. Tim kiem sach (theo ma hoac ten)        15. Doc du lieu tu file
+ 5. Them doc gia                            16. Chay bo test case tu dong (demo nhanh)
+ 6. Xem danh sach doc gia               ---------------- THU VIEN SO ----------------
+ 7. Muon sach                               17. Xem chi tiet sach (tom tat + link + diem danh gia)
+ 8. Tra sach                                18. Xem tom tat sach
+ 9. Xem lich su thao tac                    19. Doc noi dung online
+10. Undo thao tac cuoi                      20. Cap nhat tom tat / link doc online cho sach
+11. Thong ke sach muon nhieu nhat           21. Viet binh luan / danh gia sach
+                                             22. Xem binh luan / danh gia sach
+                                              0. Thoat
 ```
 
-### Biên dịch bằng Makefile
-```bash
-make all        # Biên dịch tất cả chương
-make ch1        # Biên dịch chương 1
-make ch2        # Biên dịch chương 2
-make ch3        # Biên dịch chương 3
-make ch4        # Biên dịch chương 4
-make ch5        # Biên dịch chương 5
-make ch6        # Biên dịch chương 6
-make apps       # Biên dịch ứng dụng tổng hợp
-make clean      # Xóa file binary
-make test       # Chạy tất cả
-```
+## Biên dịch & chạy
 
-### Biên dịch thủ công
-```bash
-# Ví dụ biên dịch chương 5
-g++ -std=c++17 -Wall src/Chapter5_Graph/Chapter5_Graph.cpp -o bin/ch5
-./bin/ch5
-```
-
-### Dùng IDE
-1. Mở từng file `.cpp` trong IDE
-2. Nhấn **Build & Run** (F9 / F5 / Ctrl+F5)
-
----
-
-## 🚀 Nhanh Bắt Đầu
+Yêu cầu trình biên dịch hỗ trợ C++17.
 
 ```bash
-# Chạy thử demo tất cả
-make test
-
-# Hoặc từng chương
-./bin/ch1    # Tổng quan CTDL & GT
-./bin/ch2    # Tìm kiếm & Sắp xếp  
-./bin/ch3    # Danh sách liên kết
-./bin/ch4    # Cây nhị phân & BST
-./bin/ch5    # Đồ thị
-./bin/ch6    # Quy hoạch động
-./bin/apps   # Ứng dụng tổng hợp
+g++ -std=c++17 -Wall -Wextra -o thuvien main.cpp library.cpp
+./thuvien
 ```
 
----
+Trên Windows (ví dụ dùng MinGW):
 
-## 🧩 Tóm Tắt Giải Thuật
+```bash
+g++ -std=c++17 -o thuvien.exe main.cpp library.cpp
+thuvien.exe
+```
 
-### ⏱ Bảng So Sánh Độ Phức Tạp
+> Ghi chú: hàm lấy thời gian hiện tại (`getCurrentTime`) đã được viết tương thích cả Windows (`localtime_s`) lẫn Linux/Mac (`localtime_r`) nên có thể biên dịch trên mọi hệ điều hành.
 
-| Giải Thuật | Best | Average | Worst | Space |
-|------------|------|---------|-------|-------|
-| Linear Search | O(1) | O(N) | O(N) | O(1) |
-| Binary Search | O(1) | O(log N) | O(log N) | O(1) |
-| Bubble Sort | O(N) | O(N²) | O(N²) | O(1) |
-| Selection Sort | O(N²) | O(N²) | O(N²) | O(1) |
-| Insertion Sort | O(N) | O(N²) | O(N²) | O(1) |
-| Quick Sort | O(N log N) | O(N log N) | O(N²) | O(log N) |
-| Heap Sort | O(N log N) | O(N log N) | O(N log N) | O(1) |
-| BFS / DFS | — | O(V+E) | O(V+E) | O(V) |
-| Dijkstra | — | O((V+E) log V) | O(V²) | O(V) |
-| DP Fibonacci | — | O(N) | O(N) | O(N) |
-| DP Knapsack | — | O(N·W) | O(N·W) | O(N·W) |
+Chọn mục **16** trong menu để chạy nhanh bộ test case tự động — demo toàn bộ 22 chức năng chỉ trong vài giây, bao gồm cả tóm tắt, đọc online, và bình luận/đánh giá.
 
----
+## Hướng mở rộng thêm (gợi ý)
 
-## 🤝 Đóng Góp
-
-Mọi đóng góp đều được chào đón!
-
-1. Fork dự án
-2. Tạo branch mới: `git checkout -b feature/ten-tinh-nang`
-3. Commit: `git commit -m "feat: thêm tính năng X"`
-4. Push: `git push origin feature/ten-tinh-nang`
-5. Tạo Pull Request
-
-### Convention đặt tên
-- **Branch:** `feature/`, `fix/`, `docs/`
-- **Commit:** `feat:`, `fix:`, `docs:`, `refactor:`
-- **Hàm C++:** PascalCase — `TimKiemNhiPhan()`
-- **Biến:** camelCase — `soNut`, `chieuCao`
-
----
-
-## 📚 Tài Liệu Tham Khảo
-
-- 📘 *Introduction to Algorithms* — CLRS (Cormen et al.)
-- 📗 *Data Structures and Algorithm Analysis* — Mark Allen Weiss  
-- 📙 *Competitive Programmer's Handbook* — Antti Laaksonen  
-- 📕 Giáo trình *Cấu trúc Dữ liệu & Giải thuật* — ThS. Trần Anh Khoa, ThS. Hồ Diên Lợi
-
----
-
-## 📄 Giấy Phép
-
-Dự án sử dụng **[MIT License](LICENSE)** — Tự do sử dụng, chia sẻ và chỉnh sửa với điều kiện giữ nguyên thông tin tác giả.
-
----
-
-<div align="center">
-
-Made with ❤️ · DSALab · 2025
-
-*"Bad programmers worry about the code. Good programmers worry about data structures."*  
-— Linus Torvalds
-
-</div>
+- Đọc nội dung sách từ **file riêng** (ví dụ `.txt`/`.pdf` từng chương) thay vì nhét toàn bộ text vào 1 dòng trong file lưu trữ
+- Cho phép **sửa/xóa bình luận** của chính độc giả đã viết
+- Thêm **phân trang** khi in danh sách sách/bình luận nếu dữ liệu lớn
+- Xây **giao diện web/desktop** dùng lại toàn bộ lớp `Library` làm phần lõi (backend logic không đổi)
